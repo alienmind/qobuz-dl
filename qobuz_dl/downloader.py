@@ -43,6 +43,7 @@ class Download:
         no_cover: bool = False,
         folder_format=None,
         track_format=None,
+        track_count=None,
     ):
         self.client = client
         self.item_id = item_id
@@ -55,6 +56,7 @@ class Download:
         self.no_cover = no_cover
         self.folder_format = folder_format or DEFAULT_FOLDER
         self.track_format = track_format or DEFAULT_TRACK
+        self.track_count = track_count
 
     def download_id_by_type(self, track=True):
         if not track:
@@ -101,7 +103,7 @@ class Download:
         dirn = os.path.join(self.path, sanitized_title)
         os.makedirs(dirn, exist_ok=True)
 
-        if self.no_cover:
+        if self.no_cover and not self.embed_art:
             logger.info(f"{OFF}Skipping cover")
         else:
             _get_extra(meta["image"]["large"], dirn, og_quality=self.cover_og_quality)
@@ -123,13 +125,21 @@ class Download:
                     parse,
                     i,
                     meta,
-                    False,
                     is_mp3,
                     i["media_number"] if is_multiple else None,
+                    track_count=count + 1,
                 )
             else:
                 logger.info(f"{OFF}Demo. Skipping")
             count = count + 1
+
+        if self.no_cover and self.embed_art:
+            # We downloaded the cover only for embedding purposes.
+            # Now that tagging is done, we remove the file.
+            try:
+                os.remove(os.path.join(dirn, "cover.jpg"))
+            except OSError:
+                pass
         logger.info(f"{GREEN}Completed")
 
     def download_track(self):
@@ -160,7 +170,7 @@ class Download:
 
             dirn = os.path.join(self.path, sanitized_title)
             os.makedirs(dirn, exist_ok=True)
-            if self.no_cover:
+            if self.no_cover and not self.embed_art:
                 logger.info(f"{OFF}Skipping cover")
             else:
                 _get_extra(
@@ -178,9 +188,18 @@ class Download:
                 True,
                 is_mp3,
                 False,
+                track_count=self.track_count,
             )
         else:
             logger.info(f"{OFF}Demo. Skipping")
+
+        if self.no_cover and self.embed_art:
+            # We downloaded the cover only for embedding purposes.
+            # Now that tagging is done, we remove the file.
+            try:
+                os.remove(os.path.join(dirn, "cover.jpg"))
+            except OSError:
+                pass
         logger.info(f"{GREEN}Completed")
 
     def _download_and_tag(
@@ -193,6 +212,7 @@ class Download:
         is_track,
         is_mp3,
         multiple=None,
+        track_count=None,
     ):
         extension = ".mp3" if is_mp3 else ".flac"
 
@@ -211,7 +231,9 @@ class Download:
         # Determine the filename
         track_title = track_metadata.get("title")
         artist = _safe_get(track_metadata, "performer", "name")
-        filename_attr = self._get_filename_attr(artist, track_metadata, track_title)
+        filename_attr = self._get_filename_attr(
+            artist, track_metadata, track_title, track_count
+        )
 
         # track_format is a format string
         # e.g. '{tracknumber}. {artist} - {tracktitle}'
@@ -238,7 +260,11 @@ class Download:
             logger.error(f"{RED}Error tagging the file: {e}", exc_info=True)
 
     @staticmethod
-    def _get_filename_attr(artist, track_metadata, track_title):
+    def _get_filename_attr(artist, track_metadata, track_title, track_count=None):
+        track_number = f"{track_metadata['track_number']:02}"
+        if track_count is not None:
+            track_number = f"{track_count:02}"
+
         return {
             "artist": artist,
             "albumartist": _safe_get(
@@ -248,7 +274,7 @@ class Download:
             "sampling_rate": track_metadata["maximum_sampling_rate"],
             "tracktitle": track_title,
             "version": track_metadata.get("version"),
-            "tracknumber": f"{track_metadata['track_number']:02}",
+            "tracknumber": track_number,
         }
 
     @staticmethod
