@@ -73,7 +73,7 @@ class Download:
             meta.get("release_type") != "album"
             or meta.get("artist").get("name") == "Various Artists"
         ):
-            logger.info(f'{OFF}Ignoring Single/EP/VA: {meta.get("title", "n/a")}')
+            logger.info(f"{OFF}Ignoring Single/EP/VA: {meta.get('title', 'n/a')}")
             return
 
         album_title = _get_title(meta)
@@ -256,7 +256,7 @@ class Download:
         return {
             "album": sanitize_filename(meta["album"]["title"]),
             "artist": sanitize_filename(meta["album"]["artist"]["name"]),
-            "tracktitle": track_title,
+            "tracktitle": sanitize_filename(track_title),
             "year": meta["album"]["release_date_original"].split("-")[0],
             "bit_depth": bit_depth,
             "sampling_rate": sampling_rate,
@@ -309,14 +309,17 @@ def tqdm_download(url, fname, desc):
     r = requests.get(url, allow_redirects=True, stream=True)
     total = int(r.headers.get("content-length", 0))
     download_size = 0
-    with open(fname, "wb") as file, tqdm(
-        total=total,
-        unit="iB",
-        unit_scale=True,
-        unit_divisor=1024,
-        desc=desc,
-        bar_format=CYAN + "{n_fmt}/{total_fmt} /// {desc}",
-    ) as bar:
+    with (
+        open(fname, "wb") as file,
+        tqdm(
+            total=total,
+            unit="iB",
+            unit_scale=True,
+            unit_divisor=1024,
+            desc=desc,
+            bar_format=CYAN + "{n_fmt}/{total_fmt} /// {desc}",
+        ) as bar,
+    ):
         for data in r.iter_content(chunk_size=1024):
             size = file.write(data)
             bar.update(size)
@@ -329,7 +332,7 @@ def tqdm_download(url, fname, desc):
 
 def _get_description(item: dict, track_title, multiple=None):
     downloading_title = f"{track_title} "
-    f'[{item["bit_depth"]}/{item["sampling_rate"]}]'
+    f"[{item['bit_depth']}/{item['sampling_rate']}]"
     if multiple:
         downloading_title = f"[Disc {multiple}] {downloading_title}"
     return downloading_title
