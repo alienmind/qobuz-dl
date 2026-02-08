@@ -143,9 +143,7 @@ def add_common_arg(custom_parser, default_folder, default_quality):
     )
 
 
-def qobuz_dl_args(
-    default_quality=6, default_limit=20, default_folder="Qobuz Downloads"
-):
+def qobuz_dl_args(default_quality=6, default_limit=20, default_folder="MP3"):
     parser = argparse.ArgumentParser(
         prog="qobuz-dl",
         description=(
@@ -168,6 +166,16 @@ def qobuz_dl_args(
         "--show-config",
         action="store_true",
         help="show configuration",
+    )
+    parser.add_argument(
+        "--rebuild-db",
+        action="store_true",
+        help="rebuild database from downloaded files",
+    )
+    parser.add_argument(
+        "--db",
+        action="store_true",
+        help="force database check (overrides -D default)",
     )
 
     subparsers = parser.add_subparsers(
