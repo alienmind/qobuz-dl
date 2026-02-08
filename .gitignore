@@ -1,2 +1,9 @@
 Qobuz Downloads
 __pycache__
+config.ini
+dist/
+build/
+*.spec
+ruff_errors.txt
+downloads.db
+*.log
