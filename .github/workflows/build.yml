@@ -7,6 +7,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build on ${{ matrix.os }}
@@ -51,3 +54,46 @@ jobs:
         with:
           name: qobuz-dj-binaries-${{ matrix.os }}
           path: dist/qobuz-dj-*
+
+  release:
+    name: Create GitHub Release
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version
+        id: get_version
+        run: |
+          VERSION=$(grep -m 1 "^version = " pyproject.toml | cut -d '"' -f 2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: bin-artifacts
+          pattern: qobuz-dj-binaries-*
+          merge-multiple: true
+
+      - name: Display structure of downloaded files
+        run: ls -R bin-artifacts
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.get_version.outputs.VERSION }}
+          name: Release v${{ steps.get_version.outputs.VERSION }}
+          draft: false
+          prerelease: ${{ contains(steps.get_version.outputs.VERSION, 'a') || contains(steps.get_version.outputs.VERSION, 'b') || contains(steps.get_version.outputs.VERSION, 'rc') }}
+          files: |
+            bin-artifacts/qobuz-dj-*
+          body: |
+            Automated release from CI/CD pipeline.
+            
+            ### Changes in this version
+            - Version bump to ${{ steps.get_version.outputs.VERSION }}
+            - Native standalone binaries for Windows, Linux, and macOS.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
