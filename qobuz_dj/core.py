@@ -217,7 +217,7 @@ class QobuzDL:
             )
             # Override formats for single-folder organization
             self.folder_format = "."
-            self.track_format = "{tracknumber}. {tracktitle}"
+            self.track_format = "{tracknumber} - {artist} - {tracktitle} ({year})"
             logger.info(f"{YELLOW}Downloading top {len(items)} tracks to {new_path}...")
         elif self.smart_discography and url_type == "artist":
             # change `save_space` and `skip_extras` for customization

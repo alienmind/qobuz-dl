@@ -278,6 +278,9 @@ class Download:
             "tracktitle": clean_unicode(track_title),
             "version": clean_unicode(track_metadata.get("version")),
             "tracknumber": track_number,
+            "year": _safe_get(
+                track_metadata, "album", "release_date_original", default="0000"
+            )[:4],
         }
 
     @staticmethod
