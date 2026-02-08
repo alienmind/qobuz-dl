@@ -41,12 +41,14 @@ jobs:
         if: matrix.os != 'windows-latest'
         run: |
           mv dist/qobuz-dj dist/qobuz-dj-${{ matrix.os }}
+          mv dist/qobuz-dj-gui dist/qobuz-dj-gui-${{ matrix.os }}
         shell: bash
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           mv dist/qobuz-dj.exe dist/qobuz-dj-windows.exe
+          mv dist/qobuz-dj-gui.exe dist/qobuz-dj-gui-windows.exe
         shell: bash
 
       - name: Upload Artifact
