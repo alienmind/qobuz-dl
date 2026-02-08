@@ -159,12 +159,6 @@ class Client:
         return self.multi_meta("artist/get", "albums_count", id, None)
 
     def get_artist_top_tracks(self, id, limit=5):
-        # Using catalog/getFeaturedTracks for top tracks if available, or search?
-        # Qobuz API usually has artist/get which might NOT return top tracks directly unless "extra" is used.
-        # Let's try to use valid endpoint. "artist/get" with extra="tracks" usually works for top tracks?
-        # Actually, let's use search as a fallback or if we can't find a direct endpoint.
-        # But wait, looking at `search_tracks`, it searches by query.
-        # Let's try fetching artist with `extra=tracks`.
         return self.api_call("artist/get", id=id, extra="tracks", limit=limit)[
             "tracks"
         ]["items"]
