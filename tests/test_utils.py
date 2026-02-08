@@ -17,16 +17,18 @@ def test_make_m3u_utf8_encoding(tmp_path):
 
     from unittest.mock import patch, MagicMock
 
-    with patch("qobuz_dl.utils.File") as mock_file:
-        # Mock metadata
-        mock_tag = MagicMock()
-        mock_tag.tags = {"TITLE": ["Song \u2665"], "ARTIST": ["Artist"]}
-        mock_tag.info.length = 100
-        mock_file.return_value = mock_tag
+    # We need to patch EasyMP3 since make_m3u uses it
+    with patch("qobuz_dl.utils.EasyMP3") as mock_mp3:
+        # Setup mock behavior
+        instance = mock_mp3.return_value
+        # Mock dictionary access for tags
+        tags = {"TITLE": ["Song \u2665"], "ARTIST": ["Artist"]}
+        instance.__getitem__.side_effect = tags.__getitem__
+        # Mock info.length
+        instance.info.length = 100
 
-        # Run
-        with patch("os.listdir", return_value=["Song \u2665.mp3"]):
-            make_m3u(str(pl_dir))
+        # Run make_m3u directly (it uses os.walk which finds the real files we created)
+        make_m3u(str(pl_dir))
 
     # Verify file exists and content
     m3u_file = pl_dir / f"{pl_dir.name}.m3u"
