@@ -1,0 +1,27 @@
+[project]
+name = "qobuz-dl"
+version = "0.9.9.10"
+description = "The complete Lossless and Hi-Res music downloader for Qobuz"
+readme = "README.md"
+requires-python = ">=3.13"
+
+[project.urls]
+Repository = "https://github.com/vitiko98/qobuz-dl"
+
+[project.scripts]
+qobuz-dl = "qobuz_dl:main"
+qdl = "qobuz_dl:main"
+dependencies = [
+    "beautifulsoup4>=4.14.3",
+    "colorama>=0.4.6",
+    "mutagen>=1.47.0",
+    "pathvalidate>=3.3.1",
+    "pick==1.6.0",
+    "requests>=2.32.5",
+    "tqdm>=4.67.3",
+]
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+]

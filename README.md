@@ -20,6 +20,15 @@ Search, explore and download Lossless and Hi-Res music from [Qobuz](https://www.
 
 > You'll need an **active subscription**
 
+#### Development with uv (Recommended)
+This project uses `uv` for dependency management.
+
+1. Install [uv](https://github.com/astral/uv).
+2. Run the tool:
+   ```bash
+   uv run qobuz-dl
+   ```
+
 #### Install qobuz-dl with pip
 ##### Linux / MAC OS
 ```
