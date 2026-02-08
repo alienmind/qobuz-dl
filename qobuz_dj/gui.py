@@ -13,7 +13,6 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QPlainTextEdit,
     QPushButton,
-    QStyle,
     QVBoxLayout,
     QWidget,
 )
@@ -83,8 +82,8 @@ class ConsoleWidget(QPlainTextEdit):
         # Forward key events to the MainWindow's QProcess
         main_win = self.window()
         if hasattr(main_win, "send_input"):
-            # Catch Ctrl+C
-            if event.key() == Qt.Key_C and event.modifiers() == Qt.ControlModifier:
+            # Catch Ctrl+C to break process
+            if (event.modifiers() & Qt.ControlModifier) and event.key() == Qt.Key_C:
                 main_win.break_process()
                 return
 
@@ -94,7 +93,7 @@ class ConsoleWidget(QPlainTextEdit):
 
             if key:
                 main_win.send_input(key)
-        # We don't call super().keyPressEvent(event) to keep it read-only
+        # We don't call super().keyPressEvent(event) to keep it truly read-only
 
 
 class MainWindow(QMainWindow):
@@ -135,10 +134,7 @@ class MainWindow(QMainWindow):
         toolbar_layout.addStretch()
 
         # Config Button (⚙️)
-        self.config_btn = QPushButton()
-        self.config_btn.setIcon(
-            self.style().standardIcon(QStyle.SP_TitleBarMenuButton)
-        )  # Closest to gear in SP
+        self.config_btn = QPushButton("⚙️")
         self.config_btn.setToolTip("Configure (Regenerate config.ini)")
         self.config_btn.setFixedWidth(40)
         self.config_btn.clicked.connect(lambda: self.run_command("-r"))
@@ -163,8 +159,7 @@ class MainWindow(QMainWindow):
         input_layout.addWidget(self.source_input)
 
         # Browse Folder (📁)
-        self.browse_btn = QPushButton()
-        self.browse_btn.setIcon(self.style().standardIcon(QStyle.SP_DirIcon))
+        self.browse_btn = QPushButton("📁")
         self.browse_btn.setToolTip("Browse Folder")
         self.browse_btn.setFixedWidth(40)
         self.browse_btn.clicked.connect(self.browse_folder)
@@ -206,10 +201,10 @@ class MainWindow(QMainWindow):
         else:
             cli_args.append(cmd)
 
-            # Handle Top N
+            # Handle Top N (-T)
             top_n = self.top_n_input.text().strip()
             if top_n:
-                cli_args.extend(["-t", top_n])
+                cli_args.extend(["-T", top_n])
 
             # Handle Source/Args
             args_text = self.source_input.text().strip()
