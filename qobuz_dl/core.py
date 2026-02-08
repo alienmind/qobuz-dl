@@ -1,23 +1,24 @@
 import logging
 import os
+import re
 import sys
 
 import requests
 from bs4 import BeautifulSoup as bso
 from pathvalidate import sanitize_filename
 
-from qobuz_dl.bundle import Bundle
 from qobuz_dl import downloader, qopy
-from qobuz_dl.color import CYAN, OFF, RED, YELLOW, DF, RESET
-from qobuz_dl.exceptions import NonStreamable
+from qobuz_dl.bundle import Bundle
+from qobuz_dl.color import CYAN, DF, GREEN, OFF, RED, RESET, YELLOW
 from qobuz_dl.db import create_db, handle_download_id
+from qobuz_dl.exceptions import NonStreamable
 from qobuz_dl.utils import (
+    PartialFormatter,
+    create_and_return_dir,
+    format_duration,
     get_url_info,
     make_m3u,
     smart_discography_filter,
-    format_duration,
-    create_and_return_dir,
-    PartialFormatter,
 )
 
 WEB_URL = "https://play.qobuz.com/"
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 class QobuzDL:
     def __init__(
         self,
-        directory="Qobuz Downloads",
+        directory="MP3",
         quality=6,
         embed_art=False,
         lucky_limit=1,
@@ -71,6 +72,56 @@ class QobuzDL:
         self.smart_discography = smart_discography
         self.dj_mode = dj_mode
         self.top_tracks = None  # Will be set by cli.py
+
+    def rebuild_db(self):
+        """Scans the download directory and populates the database."""
+        if not self.downloads_db:
+            logger.info(f"{RED}Database is disabled. Cannot rebuild.{RESET}")
+            sys.exit(1)
+
+        target_dir = self.directory
+        logger.info(f"{YELLOW}Scanning {target_dir} for albums to rebuild DB...{RESET}")
+
+        dirs = [
+            d
+            for d in os.listdir(target_dir)
+            if os.path.isdir(os.path.join(target_dir, d))
+        ]
+
+        count = 0
+        from qobuz_dl.utils import get_url_info
+
+        for d in dirs:
+            # Heuristic to clean folder name for search
+            # Remove (Year) and [Quality] suffixes common in default format
+            query = re.sub(r" \(\d{4}\).*", "", d)
+            query = re.sub(r" \[.*\]", "", query)
+
+            logger.info(f"Processing: {d}")
+
+            try:
+                # Search for the album
+                res = self.search_by_type(query, "album", 1, lucky=True)
+                if res:
+                    url = res[0]
+                    _, item_id = get_url_info(url)
+                    if item_id:
+                        # Check if already exists to avoid redundant write log
+                        if not handle_download_id(self.downloads_db, item_id):
+                            handle_download_id(self.downloads_db, item_id, add_id=True)
+                            logger.info(f"{GREEN}Added to DB: {d} ({item_id})")
+                            count += 1
+                        else:
+                            logger.info(f"{OFF}Already in DB: {d}")
+                    else:
+                        logger.warning(f"{RED}Could not extract ID for {d}")
+                else:
+                    logger.warning(f"{RED}No match found for {d}")
+            except Exception as e:
+                logger.error(f"{RED}Error processing {d}: {e}")
+
+        logger.info(f"{YELLOW}Rebuild complete. Added {count} new items.{RESET}")
+        sys.exit(0)
 
     def initialize_client(self, email, pwd, app_id, secrets):
         self.client = qopy.Client(email, pwd, app_id, secrets)

@@ -1,7 +1,7 @@
 import configparser
+import glob
 import hashlib
 import logging
-import glob
 import os
 import sys
 
@@ -10,6 +10,9 @@ from qobuz_dl.color import GREEN, RED, YELLOW
 from qobuz_dl.commands import qobuz_dl_args
 from qobuz_dl.core import QobuzDL
 from qobuz_dl.downloader import DEFAULT_FOLDER, DEFAULT_TRACK
+from qobuz_dl.utils import (
+    sanitize_directory,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -21,9 +24,20 @@ if os.name == "nt":
 else:
     OS_CONFIG = os.path.join(os.environ["HOME"], ".config")
 
-CONFIG_PATH = os.path.join(OS_CONFIG, "qobuz-dl")
-CONFIG_FILE = os.path.join(CONFIG_PATH, "config.ini")
-QOBUZ_DB = os.path.join(CONFIG_PATH, "qobuz_dl.db")
+if getattr(sys, "frozen", False):
+    # Portable mode: Always use CWD
+    CONFIG_PATH = os.getcwd()
+else:
+    # Installed mode: Use AppData/.config
+    CONFIG_PATH = os.path.join(OS_CONFIG, "qobuz-dl")
+
+# Check CWD first (for installed mode override, or redundancy for portable)
+if os.path.isfile(os.path.join(os.getcwd(), "config.ini")):
+    CONFIG_FILE = os.path.join(os.getcwd(), "config.ini")
+else:
+    CONFIG_FILE = os.path.join(CONFIG_PATH, "config.ini")
+
+QOBUZ_DB = os.path.join(os.getcwd(), "downloads.db")
 
 
 def _reset_config(config_file):
@@ -33,8 +47,7 @@ def _reset_config(config_file):
     password = input("Enter your password\n- ")
     config["DEFAULT"]["password"] = hashlib.md5(password.encode("utf-8")).hexdigest()
     config["DEFAULT"]["default_folder"] = (
-        input("Folder for downloads (leave empty for default 'Qobuz Downloads')\n- ")
-        or "Qobuz Downloads"
+        input("Folder for downloads (leave empty for default 'MP3')\n- ") or "MP3"
     )
     config["DEFAULT"]["default_quality"] = (
         input(
@@ -78,6 +91,10 @@ def _remove_leftovers(directory):
 
 
 def _handle_commands(qobuz, arguments):
+    if arguments.rebuild_db:
+        qobuz.rebuild_db()
+        return
+
     try:
         if arguments.command == "dl":
             qobuz.download_list_of_urls(arguments.SOURCE)
@@ -114,6 +131,7 @@ def main():
 
     config = configparser.ConfigParser()
     config.read(CONFIG_FILE)
+    no_database = False
 
     try:
         email = config["DEFAULT"]["email"]
@@ -147,6 +165,10 @@ def main():
                 "Run 'qobuz-dl -r' to fix this."
             )
 
+    if arguments.command == "sz":
+        sanitize_directory(arguments.directory)
+        sys.exit()
+
     if arguments.reset:
         sys.exit(_reset_config(CONFIG_FILE))
 
@@ -163,6 +185,17 @@ def main():
             pass
         sys.exit(f"{GREEN}The database was deleted.")
 
+    # Determine DB path
+    # If explicit --db: use QOBUZ_DB
+    # Else if explicit --no-db or config "no_database": None
+    # Else: QOBUZ_DB
+    if arguments.db:
+        db_path = QOBUZ_DB
+    elif arguments.no_db or no_database:
+        db_path = None
+    else:
+        db_path = QOBUZ_DB
+
     qobuz = QobuzDL(
         arguments.directory,
         arguments.quality,
@@ -172,7 +205,7 @@ def main():
         quality_fallback=not arguments.no_fallback or not no_fallback,  # type: ignore
         cover_og_quality=arguments.og_cover or og_cover,  # type: ignore
         no_cover=arguments.no_cover or no_cover,  # type: ignore
-        downloads_db=None if no_database or arguments.no_db else QOBUZ_DB,  # type: ignore
+        downloads_db=db_path,  # type: ignore
         folder_format=arguments.folder_format or folder_format,  # type: ignore
         track_format=arguments.track_format or track_format,  # type: ignore
         smart_discography=arguments.smart_discography or smart_discography,  # type: ignore
@@ -181,12 +214,15 @@ def main():
     if arguments.dj:
         qobuz.quality = 5
         qobuz.quality_fallback = False
-        qobuz.downloads_db = None
+        # Only disable DB if not forced by --db
+        if not arguments.db:
+            qobuz.downloads_db = None
         qobuz.smart_discography = True
         qobuz.embed_art = True
         qobuz.no_cover = True
         logging.info(
-            f"{YELLOW}DJ Mode enabled: MP3 320, No Fallback, Smart Discography, No DB, Embedded Art"
+            f"{YELLOW}DJ Mode enabled: MP3 320, No Fallback, Smart Discography, "
+            f"{'DB Enabled' if arguments.db else 'No DB'}, Embedded Art"
         )
     qobuz.top_tracks = arguments.top
     qobuz.initialize_client(email, password, app_id, secrets)  # type: ignore

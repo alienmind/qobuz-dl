@@ -35,4 +35,14 @@ dev = [
     "pytest>=9.0.2",
     "ruff>=0.15.0",
     "types-requests>=2.32.4.20260107",
+    "poethepoet>=0.24.0",
+    "pyinstaller>=6.4.0",
 ]
+
+[tool.poe.tasks]
+check = ["_check_ruff", "_check_pyright"]
+_check_ruff = "ruff check ."
+_check_pyright = "pyright"
+test = "pytest"
+build = ["check", "test", "server-build"]
+server-build = "pyinstaller --onefile --name qobuz-dl main.py"

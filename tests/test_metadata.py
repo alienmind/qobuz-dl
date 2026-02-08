@@ -1,6 +1,6 @@
 from unittest.mock import patch
 
-from qobuz_dl.metadata import _format_genres, get_safe
+from qobuz_dl.metadata import _format_copyright, _format_genres, get_safe
 
 
 def test_format_genres_deduplication():
@@ -27,9 +27,6 @@ def test_get_safe_returns_default_missing_key():
 
 def test_get_safe_returns_default_none_value():
     data = {"a": {"b": None}}
-    # Assuming get_safe treats None as missing and returns default?
-    # Let's check implementation behavior:
-    # "if val is None: return default"
     assert get_safe(data, ["a", "b"], "default") == "default"
 
 
@@ -42,7 +39,7 @@ def test_get_safe_logging(mock_log):
 
 # --- Format tests ---
 
-from qobuz_dl.metadata import _format_copyright
+# --- Format tests ---
 
 
 def test_format_genres_list():

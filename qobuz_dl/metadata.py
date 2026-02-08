@@ -72,7 +72,7 @@ def get_safe(data, keys, default=None, context_id=""):
     return val
 
 
-def _format_copyright(s: str) -> str:
+def _format_copyright(s: str | None) -> str | None:
     if s:
         s = s.replace("(P)", PHON_COPYRIGHT)
         s = s.replace("(C)", COPYRIGHT)

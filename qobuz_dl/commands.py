@@ -55,6 +55,20 @@ def dl_args(subparsers):
     return download
 
 
+def sz_args(subparsers):
+    sz = subparsers.add_parser(
+        "sz",
+        description="Sanitize/rename MP3s in directory (sequential renumbering).",
+        help="sanitize mode",
+    )
+    sz.add_argument(
+        "directory",
+        metavar="PATH",
+        help="directory to sanitize",
+    )
+    return sz
+
+
 def add_common_arg(custom_parser, default_folder, default_quality):
     custom_parser.add_argument(
         "-d",
@@ -143,9 +157,7 @@ def add_common_arg(custom_parser, default_folder, default_quality):
     )
 
 
-def qobuz_dl_args(
-    default_quality=6, default_limit=20, default_folder="Qobuz Downloads"
-):
+def qobuz_dl_args(default_quality=6, default_limit=20, default_folder="MP3"):
     parser = argparse.ArgumentParser(
         prog="qobuz-dl",
         description=(
@@ -169,6 +181,16 @@ def qobuz_dl_args(
         action="store_true",
         help="show configuration",
     )
+    parser.add_argument(
+        "--rebuild-db",
+        action="store_true",
+        help="rebuild database from downloaded files",
+    )
+    parser.add_argument(
+        "--db",
+        action="store_true",
+        help="force database check (overrides -D default)",
+    )
 
     subparsers = parser.add_subparsers(
         title="commands",
@@ -179,6 +201,7 @@ def qobuz_dl_args(
     interactive = fun_args(subparsers, default_limit)
     download = dl_args(subparsers)
     lucky = lucky_args(subparsers)
+    sz_args(subparsers)
     [
         add_common_arg(i, default_folder, default_quality)
         for i in (interactive, download, lucky)
