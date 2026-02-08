@@ -36,6 +36,13 @@ class PartialFormatter(string.Formatter):
             raise
 
 
+def clean_unicode(text):
+    """Replaces specific unicode characters as requested by the user."""
+    if not text:
+        return text
+    return text.replace("æ", "ae").replace("Æ", "AE")
+
+
 def make_m3u(pl_directory):
     track_list = ["#EXTM3U"]
     rel_folder = os.path.basename(os.path.normpath(pl_directory))
@@ -232,8 +239,8 @@ def sanitize_directory(directory):
             year = "0000"
 
             if audio and audio.tags:
-                artist = str(audio.tags.get("TPE1", [artist])[0])
-                title = str(audio.tags.get("TIT2", [title])[0])
+                artist = clean_unicode(str(audio.tags.get("TPE1", [artist])[0]))
+                title = clean_unicode(str(audio.tags.get("TIT2", [title])[0]))
 
                 # Year
                 dr_tag = audio.tags.get("TDRC")

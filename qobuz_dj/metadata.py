@@ -6,6 +6,8 @@ import mutagen.id3 as id3  # type: ignore
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import ID3NoHeaderError  # type: ignore
 
+from .utils import clean_unicode
+
 logger = logging.getLogger(__name__)
 
 
@@ -41,7 +43,7 @@ def _get_title(track_dict):
     if track_dict.get("work"):
         title = f"{track_dict['work']}: {title}"
 
-    return title
+    return clean_unicode(title)
 
 
 def log_missing_field(context_id, field, default):
@@ -180,25 +182,27 @@ def tag_flac(
 
     artist_ = get_safe(d, ["performer", "name"], None)  # TRACK ARTIST
     if istrack:
-        audio["ARTIST"] = artist_ or get_safe(
-            d, ["album", "artist", "name"], "Unknown Artist", cid
+        audio["ARTIST"] = clean_unicode(
+            artist_ or get_safe(d, ["album", "artist", "name"], "Unknown Artist", cid)
         )  # TRACK ARTIST
     else:
-        audio["ARTIST"] = artist_ or get_safe(
-            album, ["artist", "name"], "Unknown Artist", cid
+        audio["ARTIST"] = clean_unicode(
+            artist_ or get_safe(album, ["artist", "name"], "Unknown Artist", cid)
         )
 
-    audio["LABEL"] = get_safe(album, ["label", "name"], "n/a", cid)
+    audio["LABEL"] = clean_unicode(get_safe(album, ["label", "name"], "n/a", cid))
 
     if istrack:
         audio["GENRE"] = _format_genres(
             list(get_safe(d, ["album", "genres_list"], [], cid))
         )
-        audio["ALBUMARTIST"] = get_safe(
-            d, ["album", "artist", "name"], "Unknown Artist", cid
+        audio["ALBUMARTIST"] = clean_unicode(
+            get_safe(d, ["album", "artist", "name"], "Unknown Artist", cid)
         )
         audio["TRACKTOTAL"] = str(get_safe(d, ["album", "tracks_count"], "0", cid))
-        audio["ALBUM"] = get_safe(d, ["album", "title"], "Unknown Album", cid)
+        audio["ALBUM"] = clean_unicode(
+            get_safe(d, ["album", "title"], "Unknown Album", cid)
+        )
         audio["DATE"] = get_safe(
             d, ["album", "release_date_original"], "0000-00-00", cid
         )
@@ -207,11 +211,11 @@ def tag_flac(
         )
     else:
         audio["GENRE"] = _format_genres(list(get_safe(album, ["genres_list"], [], cid)))
-        audio["ALBUMARTIST"] = get_safe(
-            album, ["artist", "name"], "Unknown Artist", cid
+        audio["ALBUMARTIST"] = clean_unicode(
+            get_safe(album, ["artist", "name"], "Unknown Artist", cid)
         )
         audio["TRACKTOTAL"] = str(get_safe(album, ["tracks_count"], "0", cid))
-        audio["ALBUM"] = get_safe(album, ["title"], "Unknown Album", cid)
+        audio["ALBUM"] = clean_unicode(get_safe(album, ["title"], "Unknown Album", cid))
         audio["DATE"] = get_safe(album, ["release_date_original"], "0000-00-00", cid)
         audio["COPYRIGHT"] = _format_copyright(
             str(get_safe(album, ["copyright"], "n/a", cid))
@@ -255,24 +259,28 @@ def tag_mp3(filename, root_dir, final_name, d, album, istrack=True, em_image=Fal
 
     cid = str(d.get("id", "unknown_id"))
 
-    tags["label"] = get_safe(album, ["label", "name"], "Unknown Label", cid)
+    tags["label"] = clean_unicode(
+        get_safe(album, ["label", "name"], "Unknown Label", cid)
+    )
 
     artist_ = get_safe(d, ["performer", "name"], None)  # TRACK ARTIST
     if istrack:
         album_artist = get_safe(d, ["album", "artist", "name"], "Unknown Artist", cid)
-        tags["artist"] = artist_ or album_artist
+        tags["artist"] = clean_unicode(artist_ or album_artist)
     else:
         album_artist = get_safe(album, ["artist", "name"], "Unknown Artist", cid)
-        tags["artist"] = artist_ or album_artist
+        tags["artist"] = clean_unicode(artist_ or album_artist)
 
     if istrack:
         tags["genre"] = _format_genres(
             list(get_safe(d, ["album", "genres_list"], [], cid))
         )
-        tags["albumartist"] = get_safe(
-            d, ["album", "artist", "name"], "Unknown Artist", cid
+        tags["albumartist"] = clean_unicode(
+            get_safe(d, ["album", "artist", "name"], "Unknown Artist", cid)
         )
-        tags["album"] = get_safe(d, ["album", "title"], "Unknown Album", cid)
+        tags["album"] = clean_unicode(
+            get_safe(d, ["album", "title"], "Unknown Album", cid)
+        )
         tags["date"] = get_safe(
             d, ["album", "release_date_original"], "0000-00-00", cid
         )
@@ -282,8 +290,10 @@ def tag_mp3(filename, root_dir, final_name, d, album, istrack=True, em_image=Fal
         tracktotal = str(get_safe(d, ["album", "tracks_count"], "0", cid))
     else:
         tags["genre"] = _format_genres(list(get_safe(album, ["genres_list"], [], cid)))
-        tags["albumartist"] = get_safe(album, ["artist", "name"], "Unknown Artist", cid)
-        tags["album"] = get_safe(album, ["title"], "Unknown Album", cid)
+        tags["albumartist"] = clean_unicode(
+            get_safe(album, ["artist", "name"], "Unknown Artist", cid)
+        )
+        tags["album"] = clean_unicode(get_safe(album, ["title"], "Unknown Album", cid))
         tags["date"] = get_safe(album, ["release_date_original"], "0000-00-00", cid)
         tags["copyright"] = _format_copyright(
             str(get_safe(album, ["copyright"], "n/a", cid))

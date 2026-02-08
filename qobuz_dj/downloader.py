@@ -9,6 +9,7 @@ from tqdm import tqdm
 import qobuz_dj.metadata as metadata
 from qobuz_dj.color import CYAN, GREEN, OFF, RED, YELLOW
 from qobuz_dj.exceptions import NonStreamable
+from qobuz_dj.utils import clean_unicode
 
 QL_DOWNGRADE = "FormatRestrictedByFormatAvailability"
 # used in case of error
@@ -268,23 +269,23 @@ class Download:
             track_number = f"{track_count:02}"
 
         return {
-            "artist": artist,
-            "albumartist": _safe_get(
-                track_metadata, "album", "artist", "name", default=artist
+            "artist": clean_unicode(artist),
+            "albumartist": clean_unicode(
+                _safe_get(track_metadata, "album", "artist", "name", default=artist)
             ),
             "bit_depth": track_metadata["maximum_bit_depth"],
             "sampling_rate": track_metadata["maximum_sampling_rate"],
-            "tracktitle": track_title,
-            "version": track_metadata.get("version"),
+            "tracktitle": clean_unicode(track_title),
+            "version": clean_unicode(track_metadata.get("version")),
             "tracknumber": track_number,
         }
 
     @staticmethod
     def _get_track_attr(meta, track_title, bit_depth, sampling_rate):
         return {
-            "album": sanitize_filename(meta["album"]["title"]),
-            "artist": sanitize_filename(meta["album"]["artist"]["name"]),
-            "tracktitle": sanitize_filename(track_title),
+            "album": clean_unicode(sanitize_filename(meta["album"]["title"])),
+            "artist": clean_unicode(sanitize_filename(meta["album"]["artist"]["name"])),
+            "tracktitle": clean_unicode(sanitize_filename(track_title)),
             "year": meta["album"]["release_date_original"].split("-")[0],
             "bit_depth": bit_depth,
             "sampling_rate": sampling_rate,
@@ -293,8 +294,8 @@ class Download:
     @staticmethod
     def _get_album_attr(meta, album_title, file_format, bit_depth, sampling_rate):
         return {
-            "artist": sanitize_filename(meta["artist"]["name"]),
-            "album": sanitize_filename(album_title),
+            "artist": clean_unicode(sanitize_filename(meta["artist"]["name"])),
+            "album": clean_unicode(sanitize_filename(album_title)),
             "year": meta["release_date_original"].split("-")[0],
             "format": file_format,
             "bit_depth": bit_depth,
@@ -367,8 +368,8 @@ def _get_description(item: dict, track_title, multiple=None):
 
 
 def _get_title(item_dict):
-    album_title = item_dict["title"]
-    version = item_dict.get("version")
+    album_title = clean_unicode(item_dict["title"])
+    version = clean_unicode(item_dict.get("version"))
     if version:
         album_title = (
             f"{album_title} ({version})"
