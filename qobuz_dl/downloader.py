@@ -125,6 +125,7 @@ class Download:
                     parse,
                     i,
                     meta,
+                    False,
                     is_mp3,
                     i["media_number"] if is_multiple else None,
                     track_count=count + 1,

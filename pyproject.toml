@@ -4,15 +4,18 @@ version = "1.0.0-alpha2"
 requires-python = ">=3.10"
 dependencies = [
     "beautifulsoup4>=4.14.3",
+    "colorama>=0.4.6",
     "mutagen>=1.47.0",
     "pathvalidate>=3.3.1",
     "pick>=2.4.0",
+    "pyside6>=6.10.2",
     "requests>=2.32.5",
     "tqdm>=4.67.3",
 ]
 
 [project.scripts]
 qobuz-dj = "qobuz_dl.cli:main"
+qobuz-dj-gui = "qobuz_dj.gui:main"
 
 [build-system]
 requires = ["hatchling"]
@@ -57,5 +60,6 @@ check = ["_check_ruff", "_check_pyright"]
 _check_ruff = "ruff check ."
 _check_pyright = "pyright"
 test = "pytest"
-build = ["check", "test", "server-build"]
+build = ["check", "test", "server-build", "gui-build"]
 server-build = "pyinstaller --onefile --name qobuz-dj main.py"
+gui-build = "pyinstaller --onefile --windowed --name qobuz-dj-gui qobuz_dj/gui.py"
