@@ -152,7 +152,11 @@ def smart_discography_filter(
                 )
             )
 
-        filtered = tuple(filter(is_valid, albums))
+        filtered = sorted(
+            filter(is_valid, albums),
+            key=lambda x: x.get("release_date_original", "0000-00-00"),
+            reverse=True,
+        )
         # most of the time, len is 0 or 1.
         # if greater, it is a complete duplicate,
         # so it doesn't matter which is chosen
