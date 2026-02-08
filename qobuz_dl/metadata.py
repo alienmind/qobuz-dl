@@ -3,8 +3,8 @@ import os
 import logging
 
 from mutagen.flac import FLAC, Picture
-import mutagen.id3 as id3
-from mutagen.id3 import ID3NoHeaderError
+import mutagen.id3 as id3  # type: ignore
+from mutagen.id3 import ID3NoHeaderError  # type: ignore
 
 logger = logging.getLogger(__name__)
 
@@ -16,20 +16,20 @@ COPYRIGHT, PHON_COPYRIGHT = "\u2117", "\u00a9"
 FLAC_MAX_BLOCKSIZE = 16777215
 
 ID3_LEGEND = {
-    "album": id3.TALB,
-    "albumartist": id3.TPE2,
-    "artist": id3.TPE1,
-    "comment": id3.COMM,
-    "composer": id3.TCOM,
-    "copyright": id3.TCOP,
-    "date": id3.TDAT,
-    "genre": id3.TCON,
-    "isrc": id3.TSRC,
-    "label": id3.TPUB,
-    "performer": id3.TOPE,
-    "title": id3.TIT2,
-    "year": id3.TYER,
-}
+    "album": id3.TALB,  # type: ignore
+    "albumartist": id3.TPE2,  # type: ignore
+    "artist": id3.TPE1,  # type: ignore
+    "comment": id3.COMM,  # type: ignore
+    "composer": id3.TCOM,  # type: ignore
+    "copyright": id3.TCOP,  # type: ignore
+    "date": id3.TDAT,  # type: ignore
+    "genre": id3.TCON,  # type: ignore
+    "isrc": id3.TSRC,  # type: ignore
+    "label": id3.TPUB,  # type: ignore
+    "performer": id3.TOPE,  # type: ignore
+    "title": id3.TIT2,  # type: ignore
+    "year": id3.TYER,  # type: ignore
+}  # type: ignore
 
 
 def _get_title(track_dict):
@@ -134,7 +134,7 @@ def _embed_id3_img(root_dir, audio: id3.ID3):
         cover_image = multi_emb_image
 
     with open(cover_image, "rb") as cover:
-        audio.add(id3.APIC(3, "image/jpeg", 3, "", cover.read()))
+        audio.add(id3.APIC(3, "image/jpeg", 3, "", cover.read()))  # type: ignore
 
 
 # Use KeyError catching instead of dict.get to avoid empty tags
@@ -191,7 +191,9 @@ def tag_flac(
     audio["LABEL"] = get_safe(album, ["label", "name"], "n/a", cid)
 
     if istrack:
-        audio["GENRE"] = _format_genres(get_safe(d, ["album", "genres_list"], [], cid))
+        audio["GENRE"] = _format_genres(
+            list(get_safe(d, ["album", "genres_list"], [], cid))
+        )
         audio["ALBUMARTIST"] = get_safe(
             d, ["album", "artist", "name"], "Unknown Artist", cid
         )
@@ -200,9 +202,11 @@ def tag_flac(
         audio["DATE"] = get_safe(
             d, ["album", "release_date_original"], "0000-00-00", cid
         )
-        audio["COPYRIGHT"] = _format_copyright(get_safe(d, ["copyright"], "n/a", cid))
+        audio["COPYRIGHT"] = _format_copyright(
+            str(get_safe(d, ["copyright"], "n/a", cid))
+        )
     else:
-        audio["GENRE"] = _format_genres(get_safe(album, ["genres_list"], [], cid))
+        audio["GENRE"] = _format_genres(list(get_safe(album, ["genres_list"], [], cid)))
         audio["ALBUMARTIST"] = get_safe(
             album, ["artist", "name"], "Unknown Artist", cid
         )
@@ -210,7 +214,7 @@ def tag_flac(
         audio["ALBUM"] = get_safe(album, ["title"], "Unknown Album", cid)
         audio["DATE"] = get_safe(album, ["release_date_original"], "0000-00-00", cid)
         audio["COPYRIGHT"] = _format_copyright(
-            get_safe(album, ["copyright"], "n/a", cid)
+            str(get_safe(album, ["copyright"], "n/a", cid))
         )
 
     if em_image:
@@ -262,7 +266,9 @@ def tag_mp3(filename, root_dir, final_name, d, album, istrack=True, em_image=Fal
         tags["artist"] = artist_ or album_artist
 
     if istrack:
-        tags["genre"] = _format_genres(get_safe(d, ["album", "genres_list"], [], cid))
+        tags["genre"] = _format_genres(
+            list(get_safe(d, ["album", "genres_list"], [], cid))
+        )
         tags["albumartist"] = get_safe(
             d, ["album", "artist", "name"], "Unknown Artist", cid
         )
@@ -270,24 +276,26 @@ def tag_mp3(filename, root_dir, final_name, d, album, istrack=True, em_image=Fal
         tags["date"] = get_safe(
             d, ["album", "release_date_original"], "0000-00-00", cid
         )
-        tags["copyright"] = _format_copyright(get_safe(d, ["copyright"], "n/a", cid))
+        tags["copyright"] = _format_copyright(
+            str(get_safe(d, ["copyright"], "n/a", cid))
+        )
         tracktotal = str(get_safe(d, ["album", "tracks_count"], "0", cid))
     else:
-        tags["genre"] = _format_genres(get_safe(album, ["genres_list"], [], cid))
+        tags["genre"] = _format_genres(list(get_safe(album, ["genres_list"], [], cid)))
         tags["albumartist"] = get_safe(album, ["artist", "name"], "Unknown Artist", cid)
         tags["album"] = get_safe(album, ["title"], "Unknown Album", cid)
         tags["date"] = get_safe(album, ["release_date_original"], "0000-00-00", cid)
         tags["copyright"] = _format_copyright(
-            get_safe(album, ["copyright"], "n/a", cid)
+            str(get_safe(album, ["copyright"], "n/a", cid))
         )
         tracktotal = str(get_safe(album, ["tracks_count"], "0", cid))
 
     tags["year"] = tags["date"][:4]
 
-    audio["TRCK"] = id3.TRCK(
+    audio["TRCK"] = id3.TRCK(  # type: ignore
         encoding=3, text=f"{d.get('track_number', '0')}/{tracktotal}"
     )
-    audio["TPOS"] = id3.TPOS(encoding=3, text=str(d.get("media_number", "1")))
+    audio["TPOS"] = id3.TPOS(encoding=3, text=str(d.get("media_number", "1")))  # type: ignore
 
     # write metadata in `tags` to file
     for k, v in tags.items():
@@ -299,5 +307,5 @@ def tag_mp3(filename, root_dir, final_name, d, album, istrack=True, em_image=Fal
     if em_image:
         _embed_id3_img(root_dir, audio)
 
-    audio.save(filename, "v2_version=3")
+    audio.save(filename, v2_version=3)
     os.rename(filename, final_name)

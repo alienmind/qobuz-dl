@@ -1,5 +1,3 @@
-import os
-import pytest
 from qobuz_dl.utils import make_m3u
 
 
@@ -15,7 +13,7 @@ def test_make_m3u_utf8_encoding(tmp_path):
     # make_m3u iterates os.listdir and reads metadata using mutagen.File.
     # This is hard to test without real files or mocking mutagen.File.
 
-    from unittest.mock import patch, MagicMock
+    from unittest.mock import patch
 
     # We need to patch EasyMP3 since make_m3u uses it
     with patch("qobuz_dl.utils.EasyMP3") as mock_mp3:

@@ -136,6 +136,9 @@ class QobuzDL:
                 f'{RED}Invalid url: "{url}". Use urls from https://play.qobuz.com!'
             )
             return
+
+        content = []
+        new_path = None
         if type_dict["func"]:
             content = [item for item in type_dict["func"](item_id)]
             content_name = content[0]["name"]
@@ -313,7 +316,7 @@ class QobuzDL:
 
         try:
             item_types = ["Albums", "Tracks", "Artists", "Playlists"]
-            selected_type = pick(item_types, "I'll search for:\n[press Intro]")[0][
+            selected_type = str(pick(item_types, "I'll search for:\n[press Intro]")[0])[
                 :-1
             ].lower()
             logger.info(f"{YELLOW}Ok, we'll search for {selected_type}s{RESET}")
@@ -338,7 +341,7 @@ class QobuzDL:
                     title,
                     multiselect=True,
                     min_selection_count=0,
-                    options_map_func=get_title_text,
+                    options_map_func=get_title_text,  # type: ignore
                 )
                 if len(selected_items) > 0:
                     [final_url_list.append(i[0]["url"]) for i in selected_items]
@@ -361,7 +364,7 @@ class QobuzDL:
                     qualities,
                     desc,
                     default_index=1,
-                    options_map_func=get_quality_text,
+                    options_map_func=get_quality_text,  # type: ignore
                 )[0]["q"]
 
                 if download:
@@ -395,16 +398,20 @@ class QobuzDL:
             logger.info(f"{OFF}Nothing found")
             return
 
-        pl_title = sanitize_filename(soup.select_one("h1").text)
+        if not (pl_h1 := soup.select_one("h1")):
+            return
+        pl_title = sanitize_filename(pl_h1.text)
         pl_directory = os.path.join(self.directory, pl_title)
         logger.info(
             f"{YELLOW}Downloading playlist: {pl_title} ({len(track_list)} tracks)"
         )
 
         for i, track_name in enumerate(track_list, 1):
-            track_id = get_url_info(
-                self.search_by_type(track_name, "track", 1, lucky=True)[0]
-            )[1]
+            if not (
+                search_res := self.search_by_type(track_name, "track", 1, lucky=True)
+            ):
+                continue
+            track_id = get_url_info(search_res[0])[1]
             if track_id:
                 self.download_from_id(track_id, False, pl_directory, track_count=i)
 

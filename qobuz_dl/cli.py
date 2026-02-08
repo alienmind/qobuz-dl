@@ -137,7 +137,7 @@ def main():
             secret for secret in config["DEFAULT"]["secrets"].split(",") if secret
         ]
         arguments = qobuz_dl_args(
-            default_quality, default_limit, default_folder
+            int(default_quality), int(default_limit), default_folder
         ).parse_args()
     except (KeyError, UnicodeDecodeError, configparser.Error) as error:
         arguments = qobuz_dl_args().parse_args()
@@ -189,7 +189,7 @@ def main():
             f"{YELLOW}DJ Mode enabled: MP3 320, No Fallback, Smart Discography, No DB, Embedded Art"
         )
     qobuz.top_tracks = arguments.top
-    qobuz.initialize_client(email, password, app_id, secrets)
+    qobuz.initialize_client(email, password, app_id, secrets)  # type: ignore
 
     _handle_commands(qobuz, arguments)
 

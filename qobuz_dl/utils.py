@@ -23,11 +23,11 @@ class PartialFormatter(string.Formatter):
             val = None, field_name
         return val
 
-    def format_field(self, value, spec):
+    def format_field(self, value, format_spec):
         if not value:
             return self.missing
         try:
-            return super(PartialFormatter, self).format_field(value, spec)
+            return super(PartialFormatter, self).format_field(value, format_spec)
         except ValueError:
             if self.bad_fmt:
                 return self.bad_fmt
@@ -197,4 +197,6 @@ def get_url_info(url):
         r"?\/(album|artist|track|playlist|label)(?:\/[-\w\d]+)?\/([\w\d]+)",
         url,
     )
+    if not r:
+        raise IndexError("Invalid URL")
     return r.groups()

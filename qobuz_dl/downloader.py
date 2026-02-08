@@ -143,6 +143,7 @@ class Download:
         logger.info(f"{GREEN}Completed")
 
     def download_track(self):
+        dirn = ""
         parse = self.client.get_track_url(self.item_id, self.quality)
 
         if "sample" not in parse and parse["sampling_rate"]:
@@ -426,6 +427,8 @@ def _safe_get(d: dict, *keys, default=None):
     curr = d
     res = default
     for key in keys:
+        if not isinstance(curr, dict):
+            return default
         res = curr.get(key, default)
         if res == default or not hasattr(res, "__getitem__"):
             return res

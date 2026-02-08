@@ -1,6 +1,5 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from qobuz_dl.core import QobuzDL
 
 # Function to test pagination flattening logic without full QobuzDL instantiation?
 # We need to target the logic inside handle_url.

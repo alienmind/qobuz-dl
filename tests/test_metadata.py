@@ -1,6 +1,5 @@
-import pytest
-from unittest.mock import MagicMock, patch
-from qobuz_dl.metadata import _format_genres, get_safe, log_missing_field
+from unittest.mock import patch
+from qobuz_dl.metadata import _format_genres, get_safe
 
 
 def test_format_genres_deduplication():
