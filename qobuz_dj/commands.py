@@ -1,5 +1,7 @@
 import argparse
 
+from .version import __version__
+
 
 def fun_args(subparsers, default_limit):
     interactive = subparsers.add_parser(
@@ -172,7 +174,7 @@ def add_common_arg(custom_parser, default_folder, default_quality):
     )
 
 
-def qobuz_dl_args(default_quality=6, default_limit=20, default_folder="MP3"):
+def qobuz_dj_args(default_quality=6, default_limit=20, default_folder="MP3"):
     parser = argparse.ArgumentParser(
         prog="qobuz-dj",
         description=(
@@ -180,6 +182,9 @@ def qobuz_dl_args(default_quality=6, default_limit=20, default_folder="MP3"):
             " examples on https://github.com/alienmind/qobuz-dl"
         ),
         formatter_class=argparse.RawTextHelpFormatter,
+    )
+    parser.add_argument(
+        "-v", "--version", action="version", version=f"%(prog)s {__version__}"
     )
     parser.add_argument(
         "-r", "--reset", action="store_true", help="create/reset config file"

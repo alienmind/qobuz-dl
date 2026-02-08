@@ -20,7 +20,7 @@ def test_make_m3u_utf8_encoding(tmp_path):
     from unittest.mock import patch
 
     # We need to patch EasyMP3 since make_m3u uses it
-    with patch("qobuz_dl.utils.EasyMP3") as mock_mp3:
+    with patch("qobuz_dj.utils.EasyMP3") as mock_mp3:
         # Setup mock behavior
         instance = mock_mp3.return_value
         # Mock dictionary access for tags

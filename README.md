@@ -1,6 +1,6 @@
 # qobuz-dj 🎧
 Search, explore and download Lossless and Hi-Res music from [Qobuz](https://www.qobuz.com/).
-**This is a maintained fork of [vitiko98/qobuz-dl](https://github.com/vitiko98/qobuz-dl), specifically optimized for DJs, music collectors, and modern Python 3.13 environments.**
+**This is a maintained fork of [vitiko98/qobuz-dl](https://github.com/vitiko98/qobuz-dl), specifically optimized for my DJ workflow, but can work for other music collectors as well. Portable and easy to use.**
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=VZWSWVGZGJRMU&source=url)  
 *(You can donate to vitiko98 the original author of qobuz-dl - I don't take any donations)*
@@ -8,8 +8,10 @@ Search, explore and download Lossless and Hi-Res music from [Qobuz](https://www.
 ## Why qobuz-dj?
 This version is tailored for building a performance-ready music library:
 
-*   **DJ Mode (`dj`)**: A native top-level command for high-quality MP3s (320kbps), absolute metadata consistency, and embedded artwork.
+*   **GUI Mode (`gui`)**: A graphical user interface for the application.
+*   **DJ Mode (`dj`)**: A native top-level command for high-quality MP3s (320kbps), better metadata consistency, and embedded artwork.
 *   **Sanitization Mode (`sz`)**: Keep your library tidy with automated sequential renumbering and playlist generation.
+*   **Top tracks Mode (`top`)**: Download the top <n> tracks of an artist. Don't miss greatest hits!
 *   **Smart Discography**: Intelligently filters for the best versions of tracks, avoiding duplicates and prefering remasters.
 *   **Modern Reliability**: Fixed for **Python 3.13**, managed by **uv**, and built with automated CI/CD for all major platforms.
 
@@ -23,7 +25,7 @@ The most common command for building your library. It ensures maximum compatibil
 qobuz-dj dj <url>
 ```
 **This automatically enables:**
-- **MP3 320kbps** (Industry standard for compatibility).
+- **MP3 320kbps** (For compatibility).
 - **Embedded Artwork** (No loose `cover.jpg` files).
 - **Smart Filtering** (Skips duplicates and promotional spam).
 - **Portable Folder Naming**: Clean artist and album organization.

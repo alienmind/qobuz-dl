@@ -1,8 +1,9 @@
 import os
 import re
 import sys
+from typing import cast
 
-from PySide6.QtCore import QByteArray, QProcess, Qt
+from PySide6.QtCore import QProcess, Qt
 from PySide6.QtGui import QColor, QFont, QTextCharFormat, QTextCursor
 from PySide6.QtWidgets import (
     QApplication,
@@ -54,7 +55,7 @@ class ConsoleWidget(QPlainTextEdit):
 
     def append_ansi(self, text):
         cursor = self.textCursor()
-        cursor.movePosition(QTextCursor.End)
+        cursor.movePosition(QTextCursor.MoveOperation.End)
 
         parts = self.ansi_regex.split(text)
         current_format = QTextCharFormat()
@@ -73,22 +74,24 @@ class ConsoleWidget(QPlainTextEdit):
                     elif code in self.color_map:
                         current_format.setForeground(self.color_map[code])
                     elif code == "1":
-                        current_format.setFontWeight(QFont.Bold)
+                        current_format.setFontWeight(QFont.Weight.Bold)
 
         self.setTextCursor(cursor)
         self.ensureCursorVisible()
 
     def keyPressEvent(self, event):
         # Forward key events to the MainWindow's QProcess
-        main_win = self.window()
+        main_win = cast("MainWindow", self.window())
         if hasattr(main_win, "send_input"):
             # Catch Ctrl+C to break process
-            if (event.modifiers() & Qt.ControlModifier) and event.key() == Qt.Key_C:
+            if (
+                event.modifiers() & Qt.KeyboardModifier.ControlModifier
+            ) and event.key() == Qt.Key.Key_C:
                 main_win.break_process()
                 return
 
             key = event.text()
-            if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+            if event.key() == Qt.Key.Key_Return or event.key() == Qt.Key.Key_Enter:
                 key = "\n"
 
             if key:
@@ -103,7 +106,7 @@ class MainWindow(QMainWindow):
         self.resize(1000, 750)
 
         self.process = QProcess(self)
-        self.process.setProcessChannelMode(QProcess.MergedChannels)
+        self.process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
         self.process.readyReadStandardOutput.connect(self.read_output)
         self.process.finished.connect(self.process_finished)
 
@@ -189,7 +192,7 @@ class MainWindow(QMainWindow):
             self.source_input.setText(folder)
 
     def run_command(self, cmd):
-        if self.process.state() != QProcess.NotRunning:
+        if self.process.state() != QProcess.ProcessState.NotRunning:
             self.console.append_ansi("\x1b[31mProcess already running...\x1b[0m\n")
             return
 
@@ -237,7 +240,7 @@ class MainWindow(QMainWindow):
         self.process.start(program, cli_args)
 
     def break_process(self):
-        if self.process.state() == QProcess.Running:
+        if self.process.state() == QProcess.ProcessState.Running:
             self.console.append_ansi("\x1b[31m\n[🛑 BREAKING PROCESS...]\x1b[0m\n")
             self.process.terminate()
             # If it doesn't close in 2 seconds, kill it
@@ -252,11 +255,11 @@ class MainWindow(QMainWindow):
 
     def read_output(self):
         data = self.process.readAllStandardOutput()
-        text = str(QByteArray(data), "utf-8", errors="replace")
+        text = bytes(data.data()).decode("utf-8", errors="replace")
         self.console.append_ansi(text)
 
     def send_input(self, text):
-        if self.process.state() == QProcess.Running:
+        if self.process.state() == QProcess.ProcessState.Running:
             self.process.write(text.encode("utf-8"))
 
 

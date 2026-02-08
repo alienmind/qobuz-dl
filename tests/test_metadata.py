@@ -30,7 +30,7 @@ def test_get_safe_returns_default_none_value():
     assert get_safe(data, ["a", "b"], "default") == "default"
 
 
-@patch("qobuz_dl.metadata.log_missing_field")
+@patch("qobuz_dj.metadata.log_missing_field")
 def test_get_safe_logging(mock_log):
     data = {}
     get_safe(data, ["missing"], "default", context_id="ctx")

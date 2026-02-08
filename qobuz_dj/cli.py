@@ -125,7 +125,7 @@ def _initial_checks():
         _reset_config(CONFIG_FILE)
 
     if len(sys.argv) < 2:
-        sys.exit(qobuz_dl_args().print_help())
+        sys.exit(qobuz_dj_args().print_help())
 
 
 def main():
@@ -156,11 +156,11 @@ def main():
         secrets = [
             secret for secret in config["DEFAULT"]["secrets"].split(",") if secret
         ]
-        arguments = qobuz_dl_args(
+        arguments = qobuz_dj_args(
             int(default_quality), int(default_limit), default_folder
         ).parse_args()
     except (KeyError, UnicodeDecodeError, configparser.Error) as error:
-        arguments = qobuz_dl_args().parse_args()
+        arguments = qobuz_dj_args().parse_args()
         if not arguments.reset:
             sys.exit(
                 f"{RED}Your config file is corrupted: {error}! "

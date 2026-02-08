@@ -8,8 +8,8 @@ import pytest
 
 
 @pytest.fixture
-def mock_qobuz_dl():
-    with patch("qobuz_dl.core.QobuzDL") as MockDL:
+def mock_qobuz_dj():
+    with patch("qobuz_dj.core.QobuzDL") as MockDL:
         dl = MockDL.return_value
         # Setup attributes needed for handle_url
         dl.directory = "/tmp"
@@ -50,7 +50,7 @@ def test_core_download_smart_discography_filter_empty():
     pass
 
 
-@patch("qobuz_dl.core.QobuzDL.search_by_type")
+@patch("qobuz_dj.core.QobuzDL.search_by_type")
 def test_core_search_by_type_none(mock_search):
     """Test search returning None handling."""
     pass

@@ -414,7 +414,7 @@ def _clean_format_str(folder: str, track: str, file_format: str) -> Tuple[str, s
             fs = default
         final.append(fs)
 
-    return tuple(final)
+    return (final[0], final[1])
 
 
 def _safe_get(d: dict, *keys, default=None):
