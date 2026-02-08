@@ -61,5 +61,5 @@ _check_ruff = "ruff check ."
 _check_pyright = "pyright"
 test = "pytest"
 build = ["check", "test", "server-build", "gui-build"]
-server-build = "pyinstaller --onefile --name qobuz-dj-windows main.py"
-gui-build = "pyinstaller --onefile --windowed --name qobuz-dj-gui-windows qobuz_dj/gui.py"
+server-build = "pyinstaller --onefile --name qobuz-dj main.py"
+gui-build = "pyinstaller --onefile --windowed --name qobuz-dj-gui qobuz_dj/gui.py"
