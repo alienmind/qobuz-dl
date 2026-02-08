@@ -37,16 +37,18 @@ jobs:
       - name: Run Build (Check, Test, Package)
         run: uv run poe build
 
-      - name: Rename binary (Unix)
+      - name: Package Binaries (Unix)
         if: matrix.os != 'windows-latest'
         run: |
+          zip -j dist/qobuz-dj-${{ matrix.os }}.zip dist/qobuz-dj dist/qobuz-dj-gui
           mv dist/qobuz-dj dist/qobuz-dj-${{ matrix.os }}
           mv dist/qobuz-dj-gui dist/qobuz-dj-gui-${{ matrix.os }}
         shell: bash
 
-      - name: Rename binary (Windows)
+      - name: Package Binaries (Windows)
         if: matrix.os == 'windows-latest'
         run: |
+          powershell "Compress-Archive -Path dist/qobuz-dj.exe, dist/qobuz-dj-gui.exe -DestinationPath dist/qobuz-dj-windows.zip"
           mv dist/qobuz-dj.exe dist/qobuz-dj-windows.exe
           mv dist/qobuz-dj-gui.exe dist/qobuz-dj-gui-windows.exe
         shell: bash
